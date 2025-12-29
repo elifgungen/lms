@@ -1,0 +1,20 @@
+{
+  "name": "final-project",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:api": "npm --workspace apps/api run dev",
+    "test": "npm --workspace apps/api test",
+    "prisma:generate": "npm --workspace apps/api run prisma:generate",
+    "prisma:migrate": "npm --workspace apps/api run prisma:migrate",
+    "prisma:studio": "npm --workspace apps/api run prisma:studio"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

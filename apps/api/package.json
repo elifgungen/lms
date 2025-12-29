@@ -1,0 +1,32 @@
+{
+  "name": "@final/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js",
+    "test": "NODE_ENV=test jest --runInBand",
+    "prisma:generate": "node scripts/prisma-with-env.js generate",
+    "prisma:migrate": "node scripts/prisma-with-env.js migrate dev",
+    "prisma:migrate:deploy": "node scripts/prisma-with-env.js migrate deploy",
+    "prisma:studio": "node scripts/prisma-with-env.js studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
+    "prisma": "^5.18.0",
+    "supertest": "^6.3.4"
+  }
+}

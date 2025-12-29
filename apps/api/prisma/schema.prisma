@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  super_admin
+  admin
+  instructor
+  assistant
+  student
+  guest
+}
+
+model User {
+  id                    String         @id @default(uuid())
+  email                 String         @unique
+  passwordHash          String
+  name                  String?
+  status                String?        @default("active")
+  refreshTokenHash      String?
+  refreshTokenExpiresAt DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  roles                 UserRole[]
+  enrollments           Enrollment[]
+  coursesCreated        Course[]       @relation("CourseCreator")
+  examsCreated          Exam[]         @relation("ExamCreator")
+  questionBanksCreated  QuestionBank[] @relation("QuestionBankCreator")
+  attempts              Attempt[]
+  files                 File[]
+  auditLogs             AuditLog[]
+}
+
+model Role {
+  id    String     @id @default(uuid())
+  name  RoleName   @unique
+  users UserRole[]
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  role   Role   @relation(fields: [roleId], references: [id])
+  roleId String
+
+  @@unique([userId, roleId])
+}
+
+model Course {
+  id            String         @id @default(uuid())
+  title         String
+  description   String?
+  createdBy     User?          @relation("CourseCreator", fields: [createdById], references: [id])
+  createdById   String?
+  modules       Module[]
+  enrollments   Enrollment[]
+  exams         Exam[]
+  questionBanks QuestionBank[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Module {
+  id        String    @id @default(uuid())
+  course    Course    @relation(fields: [courseId], references: [id])
+  courseId  String
+  title     String
+  order     Int?
+  contents  Content[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Content {
+  id        String   @id @default(uuid())
+  module    Module   @relation(fields: [moduleId], references: [id])
+  moduleId  String
+  title     String
+  type      String?
+  body      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+  role      String?
+  status    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+}
+
+model Exam {
+  id              String         @id @default(uuid())
+  course          Course?        @relation(fields: [courseId], references: [id])
+  courseId        String?
+  title           String
+  description     String?
+  durationMinutes Int?
+  createdBy       User?          @relation("ExamCreator", fields: [createdById], references: [id])
+  createdById     String?
+  questionBanks   QuestionBank[] @relation("ExamQuestionBanks")
+  attempts        Attempt[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model QuestionBank {
+  id          String     @id @default(uuid())
+  name        String
+  course      Course?    @relation(fields: [courseId], references: [id])
+  courseId    String?
+  createdBy   User?      @relation("QuestionBankCreator", fields: [createdById], references: [id])
+  createdById String?
+  exams       Exam[]     @relation("ExamQuestionBanks")
+  questions   Question[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Question {
+  id             String        @id @default(uuid())
+  questionBank   QuestionBank? @relation(fields: [questionBankId], references: [id])
+  questionBankId String?
+  type           String
+  prompt         String
+  options        Json?
+  answer         Json?
+  answers        Answer[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Attempt {
+  id                String             @id @default(uuid())
+  exam              Exam               @relation(fields: [examId], references: [id])
+  examId            String
+  user              User               @relation(fields: [userId], references: [id])
+  userId            String
+  status            String?
+  startedAt         DateTime           @default(now())
+  submittedAt       DateTime?
+  answers           Answer[]
+  grade             Grade?
+  proctoringSession ProctoringSession?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Answer {
+  id         String    @id @default(uuid())
+  attempt    Attempt   @relation(fields: [attemptId], references: [id])
+  attemptId  String
+  question   Question? @relation(fields: [questionId], references: [id])
+  questionId String?
+  answer     Json?
+  isCorrect  Boolean?
+  score      Float?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Grade {
+  id         String    @id @default(uuid())
+  attempt    Attempt   @relation(fields: [attemptId], references: [id])
+  attemptId  String    @unique
+  totalScore Float?
+  gradedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model ProctoringSession {
+  id        String            @id @default(uuid())
+  attempt   Attempt           @relation(fields: [attemptId], references: [id])
+  attemptId String            @unique
+  status    String?
+  startedAt DateTime          @default(now())
+  endedAt   DateTime?
+  events    ProctoringEvent[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+model ProctoringEvent {
+  id        String            @id @default(uuid())
+  session   ProctoringSession @relation(fields: [sessionId], references: [id])
+  sessionId String
+  eventType String
+  payload   Json?
+  createdAt DateTime          @default(now())
+}
+
+model File {
+  id        String   @id @default(uuid())
+  owner     User?    @relation(fields: [ownerId], references: [id])
+  ownerId   String?
+  path      String
+  mimeType  String?
+  size      Int?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  user       User?    @relation(fields: [userId], references: [id])
+  userId     String?
+  method     String
+  path       String
+  statusCode Int?
+  ip         String?
+  userAgent  String?
+  requestId  String?
+  createdAt  DateTime @default(now())
+}
