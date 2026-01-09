@@ -1,0 +1,31 @@
+{
+    "key": "standard_156",
+    "name": "Standard 156 Question OMR Form",
+    "config": {
+        "page": {
+            "width": 1700,
+            "height": 2200
+        },
+        "choices": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E"
+        ],
+        "questionColumns": 3,
+        "rowsPerBlock": 52,
+        "expectedQuestionCount": 156,
+        "roiX": 0.455,
+        "roiY": 0.092,
+        "roiW": 0.488,
+        "roiH": 0.866,
+        "columnRanges": [
+            { "start": 0.2, "end": 0.45, "top": 0, "bottom": 1 },
+            { "start": 0.4, "end": 0.68, "top": 0, "bottom": 1 },
+            { "start": 0.764, "end": 1, "top": 0, "bottom": 1 }
+        ],
+        "threshold": 0.22,
+        "minFillDelta": 0.12
+    }
+}

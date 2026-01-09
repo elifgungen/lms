@@ -1,0 +1,69 @@
+import { ExpoConfig, ConfigContext } from "expo/config";
+
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
+  name: "LMS Mobile",
+  slug: "lms-mobile",
+  version: "1.0.0",
+  orientation: "portrait",
+  icon: "./assets/images/icon.png",
+  scheme: "lms-mobile",
+  userInterfaceStyle: "automatic",
+  newArchEnabled: true,
+  owner: "lms-project",
+  extra: {
+    ...config.extra,
+    eas: {
+      projectId: "your-eas-project-id",
+    },
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:4000",
+  },
+  splash: {
+    image: "./assets/images/splash-icon.png",
+    resizeMode: "contain",
+    backgroundColor: "#ffffff",
+  },
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: "com.lmsproject.mobile",
+    infoPlist: {
+      NSCameraUsageDescription: "Optik form okuyucu için kamera erişimi gereklidir",
+      NSFaceIDUsageDescription: "Biyometrik giriş için Face ID kullanılır",
+    },
+  },
+  android: {
+    package: "com.lmsproject.mobile",
+    adaptiveIcon: {
+      foregroundImage: "./assets/images/adaptive-icon.png",
+      backgroundColor: "#ffffff",
+    },
+    edgeToEdgeEnabled: true,
+    predictiveBackGestureEnabled: false,
+  },
+  web: {
+    bundler: "metro",
+    output: "static",
+    favicon: "./assets/images/favicon.png",
+  },
+  plugins: [
+    "expo-router",
+    "expo-localization",
+    "expo-secure-store",
+    "expo-notifications",
+    [
+      "expo-camera",
+      {
+        cameraPermission: "Optik form okuyucu için kamera erişimi gereklidir",
+      },
+    ],
+    [
+      "expo-local-authentication",
+      {
+        faceIDPermission: "Biyometrik giriş için Face ID kullanılır",
+      },
+    ],
+  ],
+  experiments: {
+    typedRoutes: true,
+  },
+});

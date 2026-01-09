@@ -23,7 +23,7 @@ import { useTranslation } from "@/i18n/LanguageContext"
 import { questionsService } from "@/lib/services/questions"
 
 const formSchema = z.object({
-    type: z.enum(['multiple_choice_single', 'multiple_choice_multi', 'true_false', 'fill_blank', 'matching', 'ordering']),
+    type: z.enum(['multiple_choice_single', 'multiple_choice_multi', 'true_false', 'fill_blank', 'matching', 'ordering', 'short_answer', 'essay', 'hotspot', 'calculation', 'code']),
     prompt: z.string().min(1, "Question prompt is required"),
     points: z.coerce.number().min(0),
     difficulty: z.enum(['easy', 'medium', 'hard']),
@@ -115,6 +115,11 @@ export default function CreateQuestionPage() {
                                 <option value="fill_blank">Fill in the Blank</option>
                                 <option value="matching">Matching</option>
                                 <option value="ordering">Ordering</option>
+                                <option value="short_answer">Short Answer</option>
+                                <option value="essay">Essay / Long Answer</option>
+                                <option value="hotspot">Hotspot (Image Click)</option>
+                                <option value="calculation">Calculation / Math</option>
+                                <option value="code">Code Execution</option>
                             </select>
                         </div>
 
@@ -180,6 +185,123 @@ export default function CreateQuestionPage() {
                                     <option value="true">True</option>
                                     <option value="false">False</option>
                                 </select>
+                            </div>
+                        )}
+
+                        {(questionType === 'short_answer' || questionType === 'fill_blank') && (
+                            <div className="space-y-2">
+                                <Label>Expected Answer(s)</Label>
+                                <Textarea
+                                    {...register("correctAnswer")}
+                                    placeholder="Enter expected answer(s), one per line for multiple acceptable answers"
+                                    rows={3}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Separate multiple acceptable answers with new lines
+                                </p>
+                            </div>
+                        )}
+
+                        {questionType === 'essay' && (
+                            <div className="space-y-2">
+                                <Label>Word Limit (Optional)</Label>
+                                <Input
+                                    type="number"
+                                    {...register("correctAnswer")}
+                                    placeholder="e.g., 500"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Essay questions require manual grading
+                                </p>
+                            </div>
+                        )}
+
+                        {questionType === 'matching' && (
+                            <div className="space-y-2">
+                                <Label>Matching Pairs</Label>
+                                {fields.map((field, index) => (
+                                    <div key={field.id} className="flex gap-2 items-center">
+                                        <Input {...register(`options.${index}.text` as const)} placeholder={`Left ${index + 1}`} className="flex-1" />
+                                        <span className="text-muted-foreground">↔</span>
+                                        <Input {...register(`options.${index}.text` as const)} placeholder={`Right ${index + 1}`} className="flex-1" />
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                                            <Trash className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                                <Button type="button" variant="outline" size="sm" onClick={() => append({ text: "" })}>
+                                    Add Pair
+                                </Button>
+                            </div>
+                        )}
+
+                        {questionType === 'ordering' && (
+                            <div className="space-y-2">
+                                <Label>Items to Order (in correct sequence)</Label>
+                                {fields.map((field, index) => (
+                                    <div key={field.id} className="flex gap-2 items-center">
+                                        <span className="text-muted-foreground w-6">{index + 1}.</span>
+                                        <Input {...register(`options.${index}.text` as const)} placeholder={`Item ${index + 1}`} className="flex-1" />
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                                            <Trash className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                                <Button type="button" variant="outline" size="sm" onClick={() => append({ text: "" })}>
+                                    Add Item
+                                </Button>
+                            </div>
+                        )}
+
+                        {questionType === 'hotspot' && (
+                            <div className="space-y-2">
+                                <Label>Image URL</Label>
+                                <Input
+                                    {...register("correctAnswer")}
+                                    placeholder="https://example.com/image.jpg"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Upload an image and define clickable regions in the exam preview
+                                </p>
+                            </div>
+                        )}
+
+                        {questionType === 'calculation' && (
+                            <div className="space-y-2">
+                                <Label>Formula / Expected Result</Label>
+                                <Input
+                                    {...register("correctAnswer")}
+                                    placeholder="e.g., 42 or x = 5"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Enter the expected numeric result or formula
+                                </p>
+                            </div>
+                        )}
+
+                        {questionType === 'code' && (
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label>Programming Language</Label>
+                                    <select
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    >
+                                        <option value="javascript">JavaScript</option>
+                                        <option value="python">Python</option>
+                                        <option value="java">Java</option>
+                                        <option value="cpp">C++</option>
+                                        <option value="csharp">C#</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Expected Output / Test Cases</Label>
+                                    <Textarea
+                                        {...register("correctAnswer")}
+                                        placeholder="Enter expected output or test cases"
+                                        rows={4}
+                                        className="font-mono text-sm"
+                                    />
+                                </div>
                             </div>
                         )}
 

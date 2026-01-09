@@ -1,27 +1,6 @@
-import { Attempt, mockAttempts } from "@/lib/mockData";
+import { apiClient } from "@/lib/api/client";
+import { createGradebookService } from "@lms/api/services";
 
-const STORAGE_KEY = "mock_attempts";
+export type { Attempt } from "@lms/core";
 
-const getAttempts = (): Attempt[] => {
-    if (typeof window === "undefined") return mockAttempts;
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(mockAttempts));
-        return mockAttempts;
-    }
-    return JSON.parse(stored);
-};
-
-export const gradebookService = {
-    getAll: async (): Promise<Attempt[]> => {
-        return new Promise((resolve) => {
-            setTimeout(() => resolve(getAttempts()), 600);
-        });
-    },
-
-    getById: async (id: string): Promise<Attempt | undefined> => {
-        return new Promise((resolve) => {
-            setTimeout(() => resolve(getAttempts().find(a => a.id === id)), 400);
-        });
-    }
-};
+export const gradebookService = createGradebookService(apiClient);

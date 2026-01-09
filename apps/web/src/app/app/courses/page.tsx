@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { mockCourses } from "@/lib/mockData"
+import { coursesService } from "@/lib/services/courses"
+import { Course } from "@/types/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -17,16 +18,40 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Plus, Search } from "lucide-react"
 import { useTranslation } from "@/i18n/LanguageContext"
+import { useAuth } from "@/lib/hooks/useAuth"
 
 export default function CoursesPage() {
+    const [courses, setCourses] = useState<Course[]>([])
     const [searchTerm, setSearchTerm] = useState("")
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
     const { t } = useTranslation()
+    const { user } = useAuth()
+    const canManage =
+        user?.roles?.includes("admin") ||
+        user?.roles?.includes("super_admin") ||
+        user?.roles?.includes("instructor") ||
+        user?.roles?.includes("assistant")
 
-    const filteredCourses = mockCourses.filter(course =>
-        course.title.toLowerCase().includes(searchTerm.toLowerCase())
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const data = await coursesService.getAll()
+                setCourses(data)
+            } catch (err) {
+                setError("Kurslar yüklenemedi")
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchCourses()
+    }, [])
+
+    const filteredCourses = courses.filter(course =>
+        (course.title || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const getStatusVariant = (status: string) => {
+    const getStatusVariant = (status?: string) => {
         switch (status) {
             case 'published': return 'default';
             case 'draft': return 'secondary';
@@ -39,11 +64,13 @@ export default function CoursesPage() {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold tracking-tight">{t('courses')}</h1>
-                <Button asChild>
-                    <Link href="/app/courses/new">
-                        <Plus className="mr-2 h-4 w-4" /> {t('create_course')}
-                    </Link>
-                </Button>
+                {canManage && (
+                    <Button asChild>
+                        <Link href="/app/courses/new">
+                            <Plus className="mr-2 h-4 w-4" /> {t('create_course')}
+                        </Link>
+                    </Button>
+                )}
             </div>
 
             <Card>
@@ -65,6 +92,7 @@ export default function CoursesPage() {
                             />
                         </div>
                     </div>
+                    {error && <p className="text-sm text-destructive mb-2">{error}</p>}
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
@@ -76,7 +104,7 @@ export default function CoursesPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredCourses.length > 0 ? (
+                                {!loading && filteredCourses.length > 0 ? (
                                     filteredCourses.map((course) => (
                                         <TableRow key={course.id}>
                                             <TableCell className="font-medium">
@@ -86,21 +114,23 @@ export default function CoursesPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusVariant(course.status) as any}>
-                                                    {course.status}
+                                                    {course.status || "active"}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>{new Date(course.createdAt).toLocaleDateString()}</TableCell>
+                                            <TableCell>{course.createdAt ? new Date(course.createdAt).toLocaleDateString() : "-"}</TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="ghost" size="sm" asChild>
-                                                    <Link href={`/app/courses/${course.id}`}>{t('edit')}</Link>
-                                                </Button>
+                                                {canManage && (
+                                                    <Button variant="ghost" size="sm" asChild>
+                                                        <Link href={`/app/courses/${course.id}`}>{t('edit')}</Link>
+                                                    </Button>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={4} className="h-24 text-center">
-                                            No results.
+                                            {loading ? "Loading..." : "No results."}
                                         </TableCell>
                                     </TableRow>
                                 )}

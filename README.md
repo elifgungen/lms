@@ -1,8 +1,8 @@
 # Final Project Monorepo
 
-Online sınav & LMS admin paneli + backend API (JWT auth, RBAC, audit log, rate limit)
+Online sınav & LMS uygulaması: Web (Next.js) + API (Express) + opsiyonel Desktop (Electron) ve Mobile (Expo).
 
-**Stack:**
+**Stack**
 - Frontend: Next.js (`apps/web`)
 - Backend: Express (`apps/api`)
 - Database: PostgreSQL
@@ -12,12 +12,13 @@ Online sınav & LMS admin paneli + backend API (JWT auth, RBAC, audit log, rate 
 
 ## Hızlı Başlangıç
 
-### 1. İlk Kurulum
+> Gereksinimler: `REQUIREMENTS.md`
 
-**Adım 1: Environment dosyasını oluştur**
+### 1) İlk Kurulum
+
+**Adım 1: `.env` oluştur**
 ```bash
-# .env.example dosyası varsa kopyalayın, yoksa manuel oluşturun
-# Root dizinde .env dosyası oluşturun ve aşağıdaki değişkenleri ekleyin:
+cp .env.example .env
 ```
 
 **Adım 2: Bağımlılıkları yükle**
@@ -27,46 +28,27 @@ npm install
 
 **Adım 3: Docker servislerini başlat**
 ```bash
-# Root dizinden çalıştırın (otomatik olarak .env dosyasını okur)
 docker compose -f infra/docker-compose.yml up -d
 
-# Servislerin hazır olmasını bekleyin (yaklaşık 10-15 saniye)
 docker compose -f infra/docker-compose.yml ps
 ```
 
-**Adım 4: Veritabanı migration'larını çalıştır**
+**Adım 4: Prisma migration**
 ```bash
-# Root dizinden
 npm run prisma:generate
 npm run prisma:migrate
-
-# Migration başarılı olursa, varsayılan roller otomatik oluşturulur
 ```
 
 **Adım 5: Geliştirme sunucularını başlat**
 ```bash
-# Root dizinden - hem web hem API'yi birlikte başlatır
-npm run dev
-```
-
-### 2. Geliştirme Modunda Çalıştırma
-
-```bash
-# Root dizinden - hem web hem API'yi birlikte başlatır
 npm run dev
 ```
 
 Bu komut:
-- `apps/web` - Next.js dev server (http://localhost:3000)
-- `apps/api` - Express API server (http://localhost:4000)
+- Web: http://localhost:3000
+- API: http://localhost:4000
 
-**Önemli Notlar:**
-- Aynı anda **sadece bir** `npm run dev` instance'ı çalıştırın
-- Eğer zaten çalışıyorsa, önce `Ctrl+C` ile kapatın
-- Aksi halde `.next/dev/lock` hatası veya port conflict alırsınız
-- Port 3000 veya 4000 kullanımda ise, önce mevcut process'i sonlandırın
-
-### 3. Tek Tek Çalıştırma
+### 2) Tek tek çalıştırma
 
 ```bash
 # Sadece frontend
@@ -80,29 +62,14 @@ npm run dev:api
 
 ### Environment Değişkenleri
 
-`.env` dosyası root dizinde olmalı ve şu değişkenleri içermelidir:
+Root dizindeki `.env` dosyası için örnek: `.env.example`.
 
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
-POSTGRES_USER=user
-POSTGRES_PASSWORD=password
-POSTGRES_DB=dbname
+> Not: `.env` dosyası repo içinde **commit edilmez** (`.gitignore` ile dışarıda).
 
-# MinIO
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=minioadmin
-MINIO_BUCKET=uploads
+## Opsiyonel Uygulamalar
 
-# JWT
-JWT_ACCESS_SECRET=your-secret-key
-JWT_REFRESH_SECRET=your-refresh-secret-key
-JWT_ACCESS_TTL=15m
-JWT_REFRESH_TTL=7d
-
-# API
-PORT=4000
-```
+- Desktop (Electron): `apps/desktop`
+- Mobile (Expo): `apps/mobile`
 
 ### Docker Compose
 
@@ -119,7 +86,7 @@ docker compose -f infra/docker-compose.yml down
 docker compose -f infra/docker-compose.yml logs -f
 ```
 
-**Not:** Docker compose otomatik olarak root dizindeki `.env` dosyasını okur. Eğer `.env` dosyası yoksa, varsayılan değerler kullanılır (minioadmin/minioadmin, uploads bucket).
+**Not:** Compose servisleri `env_file: ../.env` ile root `.env` dosyasını okur.
 
 ### Prisma Komutları
 
@@ -174,6 +141,10 @@ npm run prisma:studio
 
 **Dil Desteği:** Frontend varsayılan olarak Türkçe açılır. Dil değiştirme özelliği mevcuttur (TR/EN).
 
+## OMR Modülü
+- Pipeline, sorunlar ve debug runbook: `docs/OMR_PIPELINE.md`
+- Python/OpenCV kurulum ve doğrulama adımları: `docs/OMR_SETUP.md`
+
 ## Hızlı Smoke Test
 
 Kurulum sonrası sistemin çalıştığını doğrulamak için:
@@ -212,22 +183,20 @@ npm test
 final-project/
 ├── apps/
 │   ├── web/          # Next.js frontend
-│   └── api/          # Express backend
+│   ├── api/          # Express backend
+│   ├── desktop/      # Electron (opsiyonel)
+│   └── mobile/       # Expo (opsiyonel)
+├── packages/         # paylaşılan TS paketleri
 ├── infra/
 │   └── docker-compose.yml
-├── docs/
-│   └── openapi.yml
-└── .env              # Environment variables (root)
+└── docs/
 ```
-
-## Sorun Giderme
 
 ## Sorun Giderme
 
 ### Docker compose env uyarıları
 - Docker compose root dizinden çalıştırılmalıdır: `docker compose -f infra/docker-compose.yml up -d`
-- `.env` dosyası otomatik olarak okunur (`env_file: ../.env`)
-- Eğer `.env` yoksa, varsayılan değerler kullanılır (minioadmin/minioadmin, uploads bucket)
+- Root `.env` dosyası `env_file: ../.env` ile okunur
 
 ### Prisma DATABASE_URL bulunamıyor
 - Prisma komutları root dizinden çalıştırılmalıdır: `npm run prisma:generate` ve `npm run prisma:migrate`

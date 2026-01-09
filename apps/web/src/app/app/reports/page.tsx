@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { reportsService } from "@/lib/services/reports"
-import { ProctoringSession } from "@/lib/mockData"
+import { ProctoringSession } from "@/types/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -18,18 +18,39 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Search } from "lucide-react"
 import { useTranslation } from "@/i18n/LanguageContext"
+import { useAuth } from "@/lib/hooks/useAuth"
+
+function getBasePath(roles: string[]): string {
+    if (roles.includes("super_admin") || roles.includes("admin")) return "/admin"
+    if (roles.includes("instructor") || roles.includes("assistant")) return "/instructor"
+    return "/student"
+}
 
 export default function ReportsPage() {
     const [sessions, setSessions] = useState<ProctoringSession[]>([])
     const [searchTerm, setSearchTerm] = useState("")
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
     const { t } = useTranslation()
+    const { user } = useAuth()
+    const basePath = getBasePath(user?.roles || [])
 
     useEffect(() => {
-        reportsService.getAll().then(setSessions)
+        const fetchSessions = async () => {
+            try {
+                const data = await reportsService.getAll()
+                setSessions(data)
+            } catch {
+                setError("Raporlar yüklenemedi")
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchSessions()
     }, [])
 
     const filtered = sessions.filter(s =>
-        s.studentName.toLowerCase().includes(searchTerm.toLowerCase())
+        (s.studentName || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
 
     const getStatusColor = (status: string) => {
@@ -77,32 +98,35 @@ export default function ReportsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filtered.map((session) => (
+                                {!loading && filtered.map((session) => (
                                     <TableRow key={session.id}>
-                                        <TableCell className="font-medium">{session.studentName}</TableCell>
+                                        <TableCell className="font-medium">{session.studentName || "-"}</TableCell>
                                         <TableCell>
-                                            <Badge variant={getStatusColor(session.status) as any}>
-                                                {session.status}
+                                            <Badge variant={getStatusColor(session.status || "") as any}>
+                                                {session.status || "active"}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className={session.flagsCount > 0 ? "text-destructive font-bold" : ""}>
-                                            {session.flagsCount}
+                                        <TableCell className={session.flagsCount && session.flagsCount > 0 ? "text-destructive font-bold" : ""}>
+                                            {session.flagsCount || 0}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="sm" asChild>
-                                                <Link href={`/app/reports/${session.id}`}>{t('view_report')}</Link>
+                                                <Link href={`${basePath}/reports/${session.id}`}>{t('view_report')}</Link>
                                             </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                                {filtered.length === 0 && (
+                                {(loading || filtered.length === 0) && (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="h-24 text-center">No reports found.</TableCell>
+                                        <TableCell colSpan={4} className="h-24 text-center">
+                                            {loading ? "Loading..." : "No reports found."}
+                                        </TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
                         </Table>
                     </div>
+                    {error && <p className="text-sm text-destructive mt-2">{error}</p>}
                 </CardContent>
             </Card>
         </div>

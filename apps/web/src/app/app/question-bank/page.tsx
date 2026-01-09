@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { questionBankService } from "@/lib/services/questionBank"
-import { QuestionBank } from "@/lib/mockData"
+import { QuestionBank } from "@/types/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -21,23 +21,38 @@ import { useTranslation } from "@/i18n/LanguageContext"
 export default function QuestionBankPage() {
     const [banks, setBanks] = useState<QuestionBank[]>([])
     const [searchTerm, setSearchTerm] = useState("")
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
     const { t } = useTranslation()
 
     useEffect(() => {
-        questionBankService.getAll().then(setBanks)
+        const fetchBanks = async () => {
+            try {
+                const data = await questionBankService.getAll()
+                setBanks(data)
+            } catch (err) {
+                setError("Soru bankaları yüklenemedi")
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchBanks()
     }, [])
 
     const filtered = banks.filter(b =>
-        b.title.toLowerCase().includes(searchTerm.toLowerCase())
+        (b.title || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
 
     const handleCreate = async () => {
-        // Quick create for demo simplicity, normally would be a separate page or modal
-        const newBank = await questionBankService.create({
-            title: "New Question Bank",
-            description: "Created via quick add",
-        });
-        setBanks([newBank, ...banks]);
+        try {
+            const newBank = await questionBankService.create({
+                title: "New Question Bank",
+                description: "Created via quick add",
+            });
+            setBanks([newBank, ...banks]);
+        } catch {
+            setError("Yeni bank oluşturulamadı")
+        }
     }
 
     return (
@@ -79,25 +94,32 @@ export default function QuestionBankPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filtered.map((bank) => (
+                                {!loading && filtered.length > 0 ? filtered.map((bank) => (
                                     <TableRow key={bank.id}>
                                         <TableCell className="font-medium">
                                             <Link href={`/app/question-bank/${bank.id}`} className="hover:underline">
                                                 {bank.title}
                                             </Link>
                                         </TableCell>
-                                        <TableCell>{bank.questionCount}</TableCell>
-                                        <TableCell>{new Date(bank.createdAt).toLocaleDateString()}</TableCell>
+                                        <TableCell>{bank.questionCount ?? 0}</TableCell>
+                                        <TableCell>{bank.createdAt ? new Date(bank.createdAt).toLocaleDateString() : "-"}</TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="sm" asChild>
                                                 <Link href={`/app/question-bank/${bank.id}`}>{t('edit')}</Link>
                                             </Button>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                )) : (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="h-24 text-center">
+                                            {loading ? "Loading..." : "No results."}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </div>
+                    {error && <p className="text-sm text-destructive mt-2">{error}</p>}
                 </CardContent>
             </Card>
         </div>

@@ -1,7 +1,7 @@
 export interface Course {
     id: string;
     title: string;
-    status: 'published' | 'draft' | 'archived';
+    status?: 'published' | 'draft' | 'archived';
     createdAt: string;
     description?: string;
 }
@@ -47,10 +47,10 @@ export type QuestionType = 'multiple_choice_single' | 'multiple_choice_multi' | 
 
 export interface Question {
     id: string;
-    bankId: string;
+    bankId?: string;
     type: QuestionType;
-    prompt: string;
-    points: number;
+    prompt?: string;
+    points?: number;
     difficulty?: 'easy' | 'medium' | 'hard';
     tags?: string[];
     // Type specific fields (simplified)
@@ -81,11 +81,11 @@ export interface Exam {
     id: string;
     title: string;
     description?: string;
-    durationMinutes: number;
-    courseId: string;
-    questionBankIds: string[];
-    status: 'draft' | 'published' | 'archived';
-    createdAt: string;
+    durationMinutes?: number;
+    courseId?: string;
+    questionBankIds?: string[];
+    status?: 'draft' | 'published' | 'archived';
+    createdAt?: string;
 }
 
 export const mockExams: Exam[] = [
@@ -97,11 +97,11 @@ export interface Attempt {
     id: string;
     examId: string;
     studentId: string;
-    studentName: string;
-    score: number;
-    totalPoints: number;
-    status: 'in-progress' | 'submitted' | 'graded';
-    startedAt: string;
+    studentName?: string;
+    score?: number;
+    totalPoints?: number;
+    status?: 'in-progress' | 'submitted' | 'graded';
+    startedAt?: string;
     submittedAt?: string;
 }
 
@@ -122,11 +122,11 @@ export interface ProctoringSession {
     id: string;
     examId: string; // Linking to exam for simplicity
     studentId: string;
-    studentName: string;
-    status: 'active' | 'completed' | 'flagged';
-    startedAt: string;
-    flagsCount: number;
-    events: ProctoringEvent[];
+    studentName?: string;
+    status?: 'active' | 'completed' | 'flagged';
+    startedAt?: string;
+    flagsCount?: number;
+    events?: ProctoringEvent[];
 }
 
 export const mockProctoringSessions: ProctoringSession[] = [

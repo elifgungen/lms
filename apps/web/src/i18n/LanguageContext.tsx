@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import en from "./messages/en.json";
 import tr from "./messages/tr.json";
 
@@ -21,41 +21,46 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-    // Default to "tr" if localStorage is empty
-    const [locale, setLocaleState] = useState<Locale>(() => {
-        if (typeof window !== "undefined") {
-            const stored = localStorage.getItem("locale") as Locale;
-            if (stored && (stored === "en" || stored === "tr")) {
-                return stored;
-            }
-        }
+    const getInitialLocale = (): Locale => {
+        if (typeof window === "undefined") return "tr";
+        const stored = localStorage.getItem("locale") as Locale | null;
+        if (stored === "en" || stored === "tr") return stored;
         return "tr";
-    });
+    };
+
+    const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
 
     useEffect(() => {
-        // Sync with localStorage on mount
-        if (typeof window !== "undefined") {
-            const stored = localStorage.getItem("locale") as Locale;
-            if (stored && (stored === "en" || stored === "tr")) {
-                setLocaleState(stored);
-            } else {
-                // Ensure default is set in localStorage
-                localStorage.setItem("locale", "tr");
+        if (typeof window === "undefined") return;
+        localStorage.setItem("locale", locale);
+        document.documentElement.lang = locale;
+    }, [locale]);
+
+    useEffect(() => {
+        const handleStorage = (event: StorageEvent) => {
+            if (event.key === "locale" && (event.newValue === "en" || event.newValue === "tr")) {
+                setLocaleState(event.newValue);
             }
-        }
+        };
+        window.addEventListener("storage", handleStorage);
+        return () => window.removeEventListener("storage", handleStorage);
     }, []);
 
     const setLocale = (newLocale: Locale) => {
         setLocaleState(newLocale);
-        localStorage.setItem("locale", newLocale);
     };
 
-    const t = (key: keyof Messages) => {
-        return messages[locale][key] || key;
-    };
+    const value = useMemo(
+        () => ({
+            locale,
+            setLocale,
+            t: (key: keyof Messages) => messages[locale][key] || key,
+        }),
+        [locale],
+    );
 
     return (
-        <LanguageContext.Provider value={{ locale, setLocale, t }}>
+        <LanguageContext.Provider key={locale} value={value}>
             {children}
         </LanguageContext.Provider>
     );

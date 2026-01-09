@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Start URL -->
+  <key>startURL</key>
+  <string>http://localhost:3000/student/exams/6dc3945d-7472-4b24-b55e-07e9f5760858</string>
+  
+  <!-- Browser Configuration -->
+  <key>browserWindowAllowReload</key>
+  <true/>
+  <key>browserWindowTitleSuffix</key>
+  <string> - Secure Proctored Exam</string>
+  <key>showMenuBar</key>
+  <false/>
+  <key>showTaskBar</key>
+  <false/>
+  <key>showReloadButton</key>
+  <true/>
+  <key>showTime</key>
+  <true/>
+  
+  <!-- Kiosk Mode / Security -->
+  <key>kioskMode</key>
+  <integer>1</integer>
+  <key>createNewDesktop</key>
+  <true/>
+  <key>killExplorerShell</key>
+  <false/>
+  
+  <!-- Quit Settings - Allow quit without password -->
+  <key>allowQuit</key>
+  <true/>
+  <key>quitLink</key>
+  <string></string>
+  
+  <!-- Security Settings -->
+  <key>enableAltEsc</key>
+  <false/>
+  <key>enableAltTab</key>
+  <false/>
+  <key>enableAltF4</key>
+  <false/>
+  <key>enableCtrlEsc</key>
+  <false/>
+  <key>enableEsc</key>
+  <false/>
+  <key>enableF1</key>
+  <false/>
+  <key>enableF3</key>
+  <false/>
+  <key>enableF5</key>
+  <false/>
+  <key>enablePrintScreen</key>
+  <false/>
+  <key>enableRightMouse</key>
+  <false/>
+  <key>enableStartMenu</key>
+  <false/>
+  
+  <!-- Clipboard -->
+  <key>enableClipboardClearOnExit</key>
+  <true/>
+  
+  <!-- Developer Tools -->
+  <key>allowBrowsingBackForward</key>
+  <true/>
+  <key>allowDeveloperConsole</key>
+  <false/>
+  
+  <!-- URL Filtering -->
+  <key>URLFilterEnable</key>
+  <true/>
+  <key>URLFilterRules</key>
+  <array>
+      <dict>
+        <key>action</key>
+        <integer>1</integer>
+        <key>active</key>
+        <true/>
+        <key>expression</key>
+        <string>http://localhost:3000/*</string>
+        <key>regex</key>
+        <false/>
+      </dict>
+      <dict>
+        <key>action</key>
+        <integer>1</integer>
+        <key>active</key>
+        <true/>
+        <key>expression</key>
+        <string>http://localhost:4000/*</string>
+        <key>regex</key>
+        <false/>
+      </dict>
+  </array>
+  
+  <!-- Exam Settings -->
+  <key>examSessionClearCookiesOnStart</key>
+  <true/>
+  <key>examSessionClearCookiesOnEnd</key>
+  <true/>
+</dict>
+</plist>

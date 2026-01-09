@@ -21,6 +21,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { ChevronLeft } from "lucide-react"
 import { useTranslation } from "@/i18n/LanguageContext"
 
+import { coursesService } from "@/lib/services/courses"
+
 const formSchema = z.object({
     title: z.string().min(2, {
         message: "Title must be at least 2 characters.",
@@ -50,10 +52,15 @@ export default function CreateCoursePage() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        // Mock API call
-        console.log(values)
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        router.push("/app/courses")
+        try {
+            await coursesService.create({
+                title: values.title,
+                description: values.description,
+            })
+            router.push("/instructor/courses")
+        } catch (error) {
+            console.error("Failed to create course:", error)
+        }
     }
 
     return (

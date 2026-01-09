@@ -1,42 +1,6 @@
 import { apiClient } from "@/lib/api/client";
+import { createAuthService } from "@lms/api/services";
 
-export interface LoginRequest {
-    email: string;
-    password: string;
-}
+export type { LoginRequest, LoginResponse, LoginResult, AuthUser } from "@lms/core";
 
-export interface AuthResponse {
-    token: string;
-    user: {
-        id: string;
-        email: string;
-        name: string;
-        role: string;
-    };
-}
-
-export const authService = {
-    login: async (credentials: LoginRequest): Promise<AuthResponse> => {
-        // Mock implementation
-        // return apiClient.post('/auth/login', credentials);
-
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    token: "mock-jwt-token",
-                    user: {
-                        id: "1",
-                        email: credentials.email,
-                        name: "Admin User",
-                        role: "admin"
-                    }
-                });
-            }, 1000);
-        });
-    },
-
-    logout: async () => {
-        // return apiClient.post('/auth/logout');
-        return Promise.resolve();
-    }
-};
+export const authService = createAuthService(apiClient);

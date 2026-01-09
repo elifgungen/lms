@@ -24,7 +24,7 @@ import { useTranslation } from "@/i18n/LanguageContext"
 import { examsService } from "@/lib/services/exams"
 import { questionBankService } from "@/lib/services/questionBank"
 import { coursesService } from "@/lib/services/courses"
-import { QuestionBank, Course } from "@/lib/mockData"
+import { QuestionBank, Course } from "@/types/api"
 
 const formSchema = z.object({
     title: z.string().min(2, {

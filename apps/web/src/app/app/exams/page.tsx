@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { examsService } from "@/lib/services/exams"
-import { Exam } from "@/lib/mockData"
+import { Exam } from "@/types/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -18,24 +18,37 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Plus, Search } from "lucide-react"
 import { useTranslation } from "@/i18n/LanguageContext"
+import { useAuth } from "@/lib/hooks/useAuth"
 
 export default function ExamsPage() {
     const [exams, setExams] = useState<Exam[]>([])
     const [searchTerm, setSearchTerm] = useState("")
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
     const { t } = useTranslation()
+    const { user } = useAuth()
+    const canManage =
+        user?.roles?.includes("admin") ||
+        user?.roles?.includes("super_admin") ||
+        user?.roles?.includes("instructor") ||
+        user?.roles?.includes("assistant")
 
     useEffect(() => {
         const fetchExams = async () => {
-            const data = await examsService.getAll()
-            setExams(data)
-            setLoading(false)
+            try {
+                const data = await examsService.getAll()
+                setExams(data)
+            } catch (err) {
+                setError("Sınavlar yüklenemedi")
+            } finally {
+                setLoading(false)
+            }
         }
         fetchExams()
     }, [])
 
     const filteredExams = exams.filter(exam =>
-        exam.title.toLowerCase().includes(searchTerm.toLowerCase())
+        (exam.title || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
 
     const getStatusVariant = (status: string) => {
@@ -51,11 +64,13 @@ export default function ExamsPage() {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold tracking-tight">{t('exams')}</h1>
-                <Button asChild>
-                    <Link href="/app/exams/new">
-                        <Plus className="mr-2 h-4 w-4" /> {t('create_exam')}
-                    </Link>
-                </Button>
+                {canManage && (
+                    <Button asChild>
+                        <Link href="/app/exams/new">
+                            <Plus className="mr-2 h-4 w-4" /> {t('create_exam')}
+                        </Link>
+                    </Button>
+                )}
             </div>
 
             <Card>
@@ -99,15 +114,17 @@ export default function ExamsPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusVariant(exam.status) as any}>
-                                                    {exam.status}
+                                                    {exam.status || "draft"}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>{exam.durationMinutes} min</TableCell>
-                                            <TableCell>{exam.questionBankIds.length}</TableCell>
+                                            <TableCell>{exam.durationMinutes ? `${exam.durationMinutes} min` : "-"}</TableCell>
+                                            <TableCell>{exam.questionBankIds?.length ?? 0}</TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="ghost" size="sm" asChild>
-                                                    <Link href={`/app/exams/${exam.id}`}>{t('edit')}</Link>
-                                                </Button>
+                                                {canManage && (
+                                                    <Button variant="ghost" size="sm" asChild>
+                                                        <Link href={`/app/exams/${exam.id}`}>{t('edit')}</Link>
+                                                    </Button>
+                                                )}
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/app/exams/${exam.id}/preview`}>Preview</Link>
                                                 </Button>
@@ -124,6 +141,7 @@ export default function ExamsPage() {
                             </TableBody>
                         </Table>
                     </div>
+                    {error && <p className="text-sm text-destructive mt-2">{error}</p>}
                 </CardContent>
             </Card>
         </div>

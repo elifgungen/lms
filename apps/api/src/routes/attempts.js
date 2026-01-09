@@ -16,6 +16,27 @@ const answerSchema = z.object({
 
 router.use(auth);
 
+router.get(
+  "/",
+  asyncHandler(async (req, res) => {
+    const isPrivileged = req.user.roles.some((role) =>
+      ["super_admin", "admin", "instructor", "assistant"].includes(role)
+    );
+    const attempts = await prisma.attempt.findMany({
+      where: isPrivileged ? {} : { userId: req.user.id },
+      include: {
+        exam: true,
+        user: true,
+        grade: true,
+        proctoringSession: {
+          include: { events: true }
+        }
+      }
+    });
+    res.json({ data: attempts });
+  })
+);
+
 router.post(
   "/:id/answer",
   validate(answerSchema),
@@ -69,12 +90,22 @@ router.get(
   asyncHandler(async (req, res) => {
     const attempt = await prisma.attempt.findUnique({
       where: { id: req.params.id },
-      include: { answers: true, grade: true }
+      include: {
+        answers: true,
+        grade: true,
+        user: true,
+        proctoringSession: { include: { events: true } }
+      }
     });
     if (!attempt) {
       return res.status(404).json({ error: "Not found" });
     }
-    if (attempt.userId !== req.user.id) {
+    const canManage =
+      attempt.userId === req.user.id ||
+      req.user.roles.some((role) =>
+        ["super_admin", "admin", "instructor", "assistant"].includes(role)
+      );
+    if (!canManage) {
       return res.status(403).json({ error: "Forbidden" });
     }
     res.json({ data: attempt });

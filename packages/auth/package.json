@@ -1,0 +1,55 @@
+{
+    "name": "@lms/auth",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.js"
+        },
+        "./storage/interface": {
+            "types": "./dist/storage/interface.d.ts",
+            "import": "./dist/storage/interface.js",
+            "require": "./dist/storage/interface.js"
+        },
+        "./storage/web": {
+            "types": "./dist/storage/web.d.ts",
+            "import": "./dist/storage/web.js",
+            "require": "./dist/storage/web.js"
+        },
+        "./storage/mobile": {
+            "types": "./dist/storage/mobile.d.ts",
+            "import": "./dist/storage/mobile.js",
+            "require": "./dist/storage/mobile.js"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "typecheck": "tsc --noEmit",
+        "prepublishOnly": "npm run build"
+    },
+    "dependencies": {
+        "@lms/core": "*"
+    },
+    "peerDependencies": {
+        "expo-secure-store": ">=15.0.0",
+        "@react-native-async-storage/async-storage": ">=2.0.0"
+    },
+    "peerDependenciesMeta": {
+        "expo-secure-store": {
+            "optional": true
+        },
+        "@react-native-async-storage/async-storage": {
+            "optional": true
+        }
+    },
+    "devDependencies": {
+        "typescript": "^5.0.0",
+        "@types/node": "^20.0.0"
+    }
+}

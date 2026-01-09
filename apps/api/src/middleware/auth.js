@@ -3,12 +3,16 @@ const prisma = require("../db");
 const config = require("../config");
 
 module.exports = async function auth(req, res, next) {
+  let token = "";
+
   const header = req.headers.authorization || "";
-  if (!header.startsWith("Bearer ")) {
+  if (header.startsWith("Bearer ")) {
+    token = header.slice(7);
+  } else if (req.query.token) {
+    token = req.query.token;
+  } else {
     return res.status(401).json({ error: "Unauthorized" });
   }
-
-  const token = header.slice(7);
   try {
     const payload = jwt.verify(token, config.jwtAccessSecret);
     if (payload.type !== "access") {
@@ -27,7 +31,9 @@ module.exports = async function auth(req, res, next) {
     req.user = {
       id: user.id,
       email: user.email,
-      roles: user.roles.map((item) => item.role.name)
+      name: user.name,
+      roles: user.roles.map((item) => item.role.name),
+      twoFactorEnabled: user.twoFactorEnabled
     };
 
     next();

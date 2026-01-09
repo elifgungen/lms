@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>configVersion</key>
+  <string>lms-seb-v1</string>
+  <key>startURL</key>
+  <string>http://localhost:3000/seb-exam/a4ffff75-621f-46d4-9dff-4e798df3e535</string>
+  
+  <!-- Quit settings -->
+  <key>allowQuit</key>
+  <true/>
+  <key>allowUserToQuit</key>
+  <true/>
+  <key>showQuitButton</key>
+  <true/>
+  
+  <!-- Browser settings -->
+  <key>showMenuBar</key>
+  <true/>
+  <key>browserWindowShowURL</key>
+  <false/>
+  
+  <!-- Media capture permissions for proctoring -->
+  <key>allowVideoCapture</key>
+  <true/>
+  <key>allowAudioCapture</key>
+  <true/>
+  
+  <!-- Additional browser settings -->
+  <key>enableJavaScript</key>
+  <true/>
+  <key>blockPopUpWindows</key>
+  <true/>
+  <key>allowBrowsingBackForward</key>
+  <false/>
+  
+  <!-- Kiosk mode settings -->
+  <key>createNewDesktop</key>
+  <true/>
+  <key>killExplorerShell</key>
+  <false/>
+</dict>
+</plist>

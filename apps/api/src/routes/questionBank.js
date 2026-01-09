@@ -20,8 +20,19 @@ router.use(auth);
 router.get(
   "/",
   asyncHandler(async (req, res) => {
-    const banks = await prisma.questionBank.findMany();
-    res.json({ data: banks });
+    const banks = await prisma.questionBank.findMany({
+      include: {
+        _count: {
+          select: { questions: true }
+        }
+      }
+    });
+    // Map to include questionCount
+    const banksWithCount = banks.map(b => ({
+      ...b,
+      questionCount: b._count?.questions || 0
+    }));
+    res.json({ data: banksWithCount });
   })
 );
 
@@ -42,12 +53,18 @@ router.get(
   "/:id",
   asyncHandler(async (req, res) => {
     const bank = await prisma.questionBank.findUnique({
-      where: { id: req.params.id }
+      where: { id: req.params.id },
+      include: {
+        questions: true,
+        _count: {
+          select: { questions: true }
+        }
+      }
     });
     if (!bank) {
       return res.status(404).json({ error: "Not found" });
     }
-    res.json({ data: bank });
+    res.json({ data: { ...bank, questionCount: bank._count?.questions || 0 } });
   })
 );
 

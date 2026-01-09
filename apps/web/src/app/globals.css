@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8f5ff;
+  --foreground: #0a0a0f;
+  --page-bg: radial-gradient(circle at 20% 20%, #efe3ff 0%, #f8f5ff 45%, #ffffff 100%);
+  --panel-bg: rgba(255, 255, 255, 0.88);
+  --panel-text: #0a0a0f;
 }
 
 @theme inline {
@@ -12,15 +15,48 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0b1224;
+  --foreground: #e5e7eb;
+  --page-bg: radial-gradient(circle at 20% 20%, #1f2937 0%, #0b1224 35%, #0b1224 100%);
+  --panel-bg: rgba(17, 24, 39, 0.8);
+  --panel-text: #e5e7eb;
 }
 
 body {
-  background: var(--background);
+  background: var(--page-bg);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.page-shell {
+  min-height: 100vh;
+  background: var(--page-bg);
+}
+
+/* Light-mode readability overrides */
+html:not(.dark) .text-white,
+html:not(.dark) .text-gray-100,
+html:not(.dark) .text-gray-200 {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .text-gray-300,
+html:not(.dark) .text-gray-400,
+html:not(.dark) .text-muted-foreground {
+  color: #1f2937 !important;
+}
+
+html:not(.dark) .text-gray-500 {
+  color: #334155 !important;
+}
+
+html:not(.dark) .bg-white\/5,
+html:not(.dark) .bg-white\/10,
+html:not(.dark) .bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.72) !important;
+}
+
+html:not(.dark) .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.08) !important;
 }
