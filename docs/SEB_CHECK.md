@@ -1,6 +1,6 @@
 # SEB Check (mac/win)
 
-Minimal steps to verify Safe Exam Browser flow matches the contract.
+Minimal steps to verify Safe Exam Browser (SEB) flow.
 
 ## Flow
 1) In a normal browser, log in as student. Open the SEB-required exam detail page `/student/exams/<id>`.

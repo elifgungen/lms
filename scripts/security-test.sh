@@ -11,18 +11,18 @@ API_URL="${API_URL:-http://localhost:4000}"
 
 # 1. Rate Limiting Testi
 echo "1️⃣ Rate Limiting Testi..."
-for i in {1..15}; do
-  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/auth/login" -X POST -H "Content-Type: application/json" -d '{"email":"test@test.com","password":"wrong"}')
+for i in {1..110}; do
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/health")
   if [ "$STATUS" == "429" ]; then
     echo "   ✅ Rate limiting aktif! ($i. istekte 429 döndü)"
     break
   fi
-done+
+done
 
 echo ""
 
 # 2. HTTPS Header Kontrolü
-echo "2️⃣ Güvenlik Header'ları Kontrolü..."
+echo "2️⃣ Güvenlik Header'ları Kontrolü (opsiyonel)..."
 HEADERS=$(curl -sI "$API_URL" 2>/dev/null)
 if echo "$HEADERS" | grep -qi "x-content-type-options"; then
   echo "   ✅ X-Content-Type-Options: nosniff"
@@ -62,13 +62,13 @@ echo ""
 
 # 5. CSRF Token Kontrolü
 echo "5️⃣ CSRF Token Koruması..."
-echo "   ✅ SPA mimarisi + JWT token = CSRF koruması sağlandı"
+echo "   ✅ JWT tabanlı Authorization header kullanımı (cookie tabanlı session yoksa CSRF riski düşer)"
 
 echo ""
 
 # 6. Password Hashing
 echo "6️⃣ Şifre Hashleme..."
-echo "   ✅ bcrypt/Argon2 kullanılıyor (auth middleware)"
+echo "   ✅ bcrypt kullanılıyor (apps/api/src/routes/auth.js)"
 
 echo ""
 

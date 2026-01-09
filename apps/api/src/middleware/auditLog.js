@@ -1,8 +1,6 @@
 /**
  * Audit Logging Middleware
  * Kritik işlemleri veritabanına kaydeder
- * 
- * Sözleşme Gereksinimi: MADDE 14 - Güvenlik (Audit Logging: 0.8 puan)
  */
 
 const prisma = require('../db');

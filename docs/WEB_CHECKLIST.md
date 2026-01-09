@@ -1,6 +1,6 @@
-# Web Contract Article 5 - Verification Checklist
+# Web Verification Checklist
 
-This document provides step-by-step verification instructions for all Article 5 requirements.
+This document provides step-by-step verification instructions for core web app features (UI, roles, PWA, SEB).
 
 ## Prerequisites
 
@@ -68,7 +68,7 @@ npm run start
 
 # Open Chrome, navigate to http://localhost:3000
 # DevTools > Lighthouse > Generate Report
-# Target: 90+ Performance score
+# Target: 90+ Lighthouse Performance
 ```
 
 ### Multi-language (i18n)
@@ -178,18 +178,18 @@ curl -s -X POST "http://localhost:4000/exams/$EXAM_ID/start" \
 | SEB UI | `student/exams/[id]/page.tsx` (enhanced), `instructor/exams/new/page.tsx` |
 | Services | `exams.ts` (SEB field mapping) |
 
-### Contract Coverage
+### Coverage Summary
 
-| Requirement | Status | Location |
+| Area | Status | Location |
 |-------------|--------|----------|
-| 5.1.1 Responsive | ✅ | Tailwind + grid layouts |
-| 5.1.2 SPA | ✅ | Next.js App Router |
-| 5.1.3 PWA | ✅ | manifest.json, sw.js |
-| 5.1.4 Browser compat | ✅ | Standard React/CSS |
-| 5.1.5 Performance | ⚠️ | Run Lighthouse on prod build |
-| 5.1.6 i18n | ✅ | LanguageContext + JSON files |
-| 5.1.7 Theme | ✅ | next-themes, defaultTheme=light |
-| 5.2 Course mgmt | ⚠️ | Basic CRUD exists; WYSIWYG/drag-drop partial |
-| 5.3 Assessment | ⚠️ | Question types exist; rubric/random partial |
+| Responsive UI | ✅ | Tailwind + grid layouts |
+| SPA navigation | ✅ | Next.js App Router |
+| PWA | ✅ | manifest.json, sw.js |
+| Browser compat | ✅ | Standard React/CSS |
+| Performance | ⚠️ | Run Lighthouse on prod build |
+| i18n | ✅ | LanguageContext + JSON files |
+| Theme | ✅ | next-themes, defaultTheme=light |
+| Course mgmt | ⚠️ | Basic CRUD exists; WYSIWYG/drag-drop partial |
+| Assessment | ⚠️ | Question types exist; rubric/random partial |
 | SEB Integration | ✅ | Full flow implemented |
 | Role lanes | ✅ | 5 roles with proper restrictions |
