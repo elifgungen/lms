@@ -75,12 +75,12 @@ class OMRService {
     runPythonWorker(inputPath, templatePath, outputDir, options = {}) {
         return new Promise((resolve, reject) => {
             const python = process.platform === 'win32' ? 'python' : 'python3';
-            // Safer defaults: faint mode açık, ilk blok + 52 soru limiti; env ile override edilebilir
+            // Safer defaults: strict mode ON, faint mode OFF; env ile override edilebilir
             const env = {
                 ...process.env,
                 OMR_DEBUG: process.env.OMR_DEBUG || '1',
-                OMR_FAINT: process.env.OMR_FAINT || '1',
-                OMR_STRICT: process.env.OMR_STRICT || '0',
+                OMR_FAINT: process.env.OMR_FAINT || '0',
+                OMR_STRICT: process.env.OMR_STRICT || '1',
                 OMR_LIMIT_FIRST_BLOCK: process.env.OMR_LIMIT_FIRST_BLOCK || '1',
                 OMR_MAX_QUESTIONS: process.env.OMR_MAX_QUESTIONS || '52'
             };

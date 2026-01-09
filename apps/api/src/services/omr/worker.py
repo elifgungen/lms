@@ -792,7 +792,7 @@ def apply_decisions(gray, rows, th, faint_ok, is_empty, bmi, choices, allow_fain
         ng, ink = r['noise_gap'], r['ink_ratio']
         tier, ws, vr = 'BLANK', False, None
         if best >= mth and delta >= margin and z >= Z_TH_OK: ws, tier = True, 'OK'
-        elif faint_ok and best >= bth and delta >= fm and z >= Z_TH_FAINT: ws, tier = True, 'FAINT_OK'
+        elif FAINT_MODE and faint_ok and best >= bth and delta >= fm and z >= Z_TH_FAINT: ws, tier = True, 'FAINT_OK'
         elif best >= bth and delta < margin: tier, vr = 'MULTI', 'BELOW_THRESH'
         elif best >= bth and z < Z_TH_OK: tier, vr = 'LOW_CONF', 'BELOW_THRESH'
         else: vr = 'BELOW_THRESH'
@@ -817,18 +817,16 @@ def apply_decisions(gray, rows, th, faint_ok, is_empty, bmi, choices, allow_fain
         elif tier == 'LOW_CONF': r['answer'], r['confidence'], r['status'], r['flags'] = None if STRICT else bc, int((delta/max(best,1e-6))*100), 'LOW_CONF', ['LOW_CONFIDENCE']
         else: r['answer'], r['confidence'], r['status'], r['flags'] = None, 0, 'BLANK', ['BLANK']
         r['tier'], r['veto_reason'] = tier, vr
-        # Faint-mode fallback: only for allowed blocks (e.g., block1)
-        # More conservative thresholds to avoid false positives on blank bubbles
-        if allow_faint_force and FAINT_MODE and r['answer'] is None:
-            # Require ALL of: reasonable best score, decent delta, and positive z-score
-            faint_best_ok = best >= mth * 0.70  # at least 70% of mark threshold
-            faint_delta_ok = delta >= margin * 0.80  # at least 80% of margin
-            faint_z_ok = z >= 1.0  # must have positive z-score (stands out from row)
-            if faint_best_ok and faint_delta_ok and faint_z_ok:
-                r['answer'] = bc
-                r['confidence'] = int((delta/max(best,1e-6))*100)
-                r['status'] = 'FAINT_FORCED'
-                r['flags'] = ['FORCED_FAINT']
+        # DISABLED: FAINT_FORCED causes false positives
+        # if allow_faint_force and FAINT_MODE and r['answer'] is None:
+        #     faint_best_ok = best >= mth * 0.70
+        #     faint_delta_ok = delta >= margin * 0.80
+        #     faint_z_ok = z >= 1.0
+        #     if faint_best_ok and faint_delta_ok and faint_z_ok:
+        #         r['answer'] = bc
+        #         r['confidence'] = int((delta/max(best,1e-6))*100)
+        #         r['status'] = 'FAINT_FORCED'
+        #         r['flags'] = ['FORCED_FAINT']
     return rows
 
 def targeted_rescue(gray, row, th, bmi, choices):
@@ -1000,17 +998,52 @@ def process(inp, tmpl, outd):
         ex = {r['question'] for r in arows}
         for q in range(1, EXPECTED_QUESTION_COUNT+1):
             if q not in ex:
-                arows.append({'question':q,'answer':None,'confidence':0,'scores':{},'flags':['BLANK','NOT_DETECTED'],'status':'NOT_DETECTED','block':'unknown','tier':'NOT_DETECTED','tags':[],'veto_reason':None,'coords':[],'best_idx':0,'scores_list':[]})
+                arows.append({
+                    'question': q,
+                    'answer': None,
+                    'confidence': 0,
+                    'scores': {},
+                    'flags': ['BLANK', 'NOT_DETECTED'],
+                    'status': 'NOT_DETECTED',
+                    'block': 'unknown',
+                    'tier': 'NOT_DETECTED',
+                    'tags': [],
+                    'veto_reason': None,
+                    'coords': [],
+                    'best_idx': 0,
+                    'scores_list': [],
+                    'best': 0.0,
+                    'delta': 0.0,
+                    'z': 0.0,
+                    'noise_gap': 0.0,
+                    'ink_ratio': 0.0
+                })
         arows.sort(key=lambda r:r['question'])
         if MAX_QUESTIONS > 0:
             arows = arows[:MAX_QUESTIONS]
         else:
             arows = arows[: (EXPECTED_QUESTION_COUNT if not LIMIT_FIRST_BLOCK else ROWS_PER_BLOCK)]
         res = {
-            'templateKey':tk,
-            'answers':[{'question':r['question'],'answer':r.get('answer'),'confidence':r.get('confidence',0),'scores':r.get('scores',{}),'flags':r.get('flags',[]),'block':r.get('block'),'status':r.get('status')} for r in arows],
-            'summary':{'total':len(arows),'answered':ans,'ok':ok},
-            'meta':meta,
+            'templateKey': tk,
+            'answers': [{
+                'question': r['question'],
+                'answer': r.get('answer'),
+                'confidence': r.get('confidence', 0),
+                'scores': r.get('scores', {}),
+                'flags': r.get('flags', []),
+                'block': r.get('block'),
+                'status': r.get('status'),
+                'best': float(r.get('best', 0.0) or 0.0),
+                'delta': float(r.get('delta', 0.0) or 0.0),
+                'z': float(r.get('z', 0.0) or 0.0),
+                'noise_gap': float(r.get('noise_gap', 0.0) or 0.0),
+                'ink_ratio': float(r.get('ink_ratio', 0.0) or 0.0),
+                'tier': r.get('tier'),
+                'veto_reason': r.get('veto_reason'),
+                'tags': r.get('tags', [])
+            } for r in arows],
+            'summary': {'total': len(arows), 'answered': ans, 'ok': ok},
+            'meta': meta,
             'anchors': anchors or auto_anchors
         }
         rp = os.path.join(outd,'result.json')
@@ -1037,8 +1070,9 @@ def process(inp, tmpl, outd):
         bmi = calibrate_ink_threshold(rows, th['mark_th'], th['margin']) if not ie else None
         th.update({'strong_count':sc,'faint_enabled':fe,'is_empty':ie,'median_ink':bmi}); aths[blk['name']] = th
         rows = apply_decisions(gray, rows, th, fe, ie, bmi, choices, allow_faint_force=ib1)
-        rows = apply_rescue_pass(gray, rows, th, ie, bmi, choices)
-        rows = apply_near_miss_rescue(gray, gcl, rows, th, ie, bmi, choices)
+        # DISABLED: Rescue passes cause too many false positives
+        # rows = apply_rescue_pass(gray, rows, th, ie, bmi, choices)
+        # rows = apply_near_miss_rescue(gray, gcl, rows, th, ie, bmi, choices)
         # If non-first block and very few answers found, treat entire block as empty to avoid noise-induced marks
         if not ib1:
             answered = sum(1 for r in rows if r.get('answer'))
@@ -1062,7 +1096,23 @@ def process(inp, tmpl, outd):
     ex = {r['question'] for r in arows}
     for q in range(1, EXPECTED_QUESTION_COUNT+1):
         if q not in ex:
-            arows.append({'question':q,'answer':None,'confidence':0,'scores':{},'flags':['BLANK','NOT_DETECTED'],'status':'NOT_DETECTED','block':'unknown','tier':'NOT_DETECTED','tags':[],'veto_reason':None})
+            arows.append({
+                'question': q,
+                'answer': None,
+                'confidence': 0,
+                'scores': {},
+                'flags': ['BLANK', 'NOT_DETECTED'],
+                'status': 'NOT_DETECTED',
+                'block': 'unknown',
+                'tier': 'NOT_DETECTED',
+                'tags': [],
+                'veto_reason': None,
+                'best': 0.0,
+                'delta': 0.0,
+                'z': 0.0,
+                'noise_gap': 0.0,
+                'ink_ratio': 0.0
+            })
     arows.sort(key=lambda r:r['question'])
     if MAX_QUESTIONS > 0:
         arows = arows[:MAX_QUESTIONS]
@@ -1073,10 +1123,26 @@ def process(inp, tmpl, outd):
     ok = sum(1 for r in arows if r.get('status','').startswith('OK'))
     ans = sum(1 for r in arows if r.get('answer'))
     res = {
-        'templateKey':tk,
-        'answers':[{'question':r['question'],'answer':r.get('answer'),'confidence':r.get('confidence',0),'scores':r.get('scores',{}),'flags':r.get('flags',[]),'block':r.get('block'),'status':r.get('status')} for r in arows],
-        'summary':{'total':len(arows),'answered':ans,'ok':ok},
-        'meta':meta,
+        'templateKey': tk,
+        'answers': [{
+            'question': r['question'],
+            'answer': r.get('answer'),
+            'confidence': r.get('confidence', 0),
+            'scores': r.get('scores', {}),
+            'flags': r.get('flags', []),
+            'block': r.get('block'),
+            'status': r.get('status'),
+            'best': float(r.get('best', 0.0) or 0.0),
+            'delta': float(r.get('delta', 0.0) or 0.0),
+            'z': float(r.get('z', 0.0) or 0.0),
+            'noise_gap': float(r.get('noise_gap', 0.0) or 0.0),
+            'ink_ratio': float(r.get('ink_ratio', 0.0) or 0.0),
+            'tier': r.get('tier'),
+            'veto_reason': r.get('veto_reason'),
+            'tags': r.get('tags', [])
+        } for r in arows],
+        'summary': {'total': len(arows), 'answered': ans, 'ok': ok},
+        'meta': meta,
         'anchors': anchors or auto_anchors
     }
     rp = os.path.join(outd,'result.json')
