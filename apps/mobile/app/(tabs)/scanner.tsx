@@ -193,9 +193,16 @@ export default function ScannerScreen() {
     setProcessing(true);
     try {
       const apiResult = await processOmrImage(sourceImageUri, undefined, anchors);
+      const acceptedStatuses = new Set([
+        'OK',
+        'OK_STAB_OVERRIDE',
+        'FAINT_OK',
+        'RESCUED',
+        'NEAR_MISS_OK',
+      ]);
       const bubbles = (apiResult.answers || []).map((a) => ({
         question: `Soru ${a.question}`,
-        selected: a.answer || '-',
+        selected: a.answer && acceptedStatuses.has(a.status || '') ? a.answer : '-',
         confidence: a.confidence,
         status: a.status,
         correctAnswer: a.correctAnswer,

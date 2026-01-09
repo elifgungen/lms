@@ -25,8 +25,8 @@ const deriveApiUrlFromHost = () => {
 const getApiUrl = (): string => {
     const envUrl = process.env.EXPO_PUBLIC_API_URL;
     const extraUrl = (Constants.expoConfig?.extra as any)?.apiUrl;
-    // Fallback to specific LAN IP for physical device testing
-    return envUrl || extraUrl || deriveApiUrlFromHost() || 'http://10.122.248.59:4000';
+    // Prefer explicit config; otherwise derive from Expo host; final fallback for simulator/dev.
+    return envUrl || extraUrl || deriveApiUrlFromHost() || 'http://localhost:4000';
 };
 
 export const API_URL = getApiUrl();
