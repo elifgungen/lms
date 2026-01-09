@@ -5,7 +5,7 @@ This document provides step-by-step verification instructions for all Article 5 
 ## Prerequisites
 
 ```bash
-cd /Users/elifgungen/final-project
+cd lms
 
 # 1. Start Docker infrastructure
 docker compose -f infra/docker-compose.yml up -d

@@ -156,7 +156,7 @@ const courseTemplates = {
                 titleEn: 'Project',
                 order: 4,
                 contents: [
-                    { title: 'Final Projesi', titleEn: 'Final Project', type: 'assignment' }
+                    { title: 'LMS Demo', titleEn: 'LMS Demo', type: 'assignment' }
                 ]
             }
         ]

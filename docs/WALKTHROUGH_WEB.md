@@ -4,17 +4,17 @@
 
 ```bash
 # Terminal 1: Start Infrastructure
-cd /Users/elifgungen/final-project
+cd lms
 docker compose -f infra/docker-compose.yml up -d
 
 # Terminal 2: Setup Database & Start API
-cd /Users/elifgungen/final-project/apps/api
+cd apps/api
 DATABASE_URL="postgresql://lms_user:lms_password@localhost:5432/lms_db" npx prisma migrate dev
 DATABASE_URL="postgresql://lms_user:lms_password@localhost:5432/lms_db" npx prisma db seed
 npm run dev
 
 # Terminal 3: Start Web
-cd /Users/elifgungen/final-project
+cd ../..
 rm -rf apps/web/.next
 npm --workspace apps/web run dev
 ```

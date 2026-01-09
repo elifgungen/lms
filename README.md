@@ -1,4 +1,4 @@
-# Final Project Monorepo
+# LMS Monorepo
 
 Online sınav & LMS uygulaması: Web (Next.js) + API (Express) + opsiyonel Desktop (Electron) ve Mobile (Expo).
 
@@ -180,7 +180,7 @@ npm test
 ## Proje Yapısı
 
 ```
-final-project/
+lms/
 ├── apps/
 │   ├── web/          # Next.js frontend
 │   ├── api/          # Express backend
